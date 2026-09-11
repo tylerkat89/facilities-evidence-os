@@ -11,6 +11,10 @@ import {
   validWalkToken,
   walkCookieFromHeader,
   walkSetCookie,
+  allowWalkIssue,
+  clientIp,
+  isBlockedPublicPath,
+  demoLocationFromSearch,
 } from "../../src/lib/demo-walk.server";
 
 function whichDoc(path: string): "qr" | "card" | "feos" | "desk" | "demo" | "locked" | null {
@@ -43,11 +47,21 @@ export default async function feosDocument(
 
   if (doc === "demo") {
     const https = event.url.protocol === "https:";
+    if (!allowWalkIssue(clientIp(event.req.headers))) {
+      return new Response(lockedHtml, {
+        status: 429,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "no-store",
+          "retry-after": "600",
+        },
+      });
+    }
     const token = issueWalkToken();
     return new Response(null, {
       status: 302,
       headers: {
-        location: "/feos.html",
+        location: demoLocationFromSearch(event.url.search || ""),
         "set-cookie": walkSetCookie(token, https),
         "cache-control": "no-store",
       },

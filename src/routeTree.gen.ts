@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiDeskRouteImport } from './routes/api/desk'
 import { Route as ApiPilotRouteImport } from './routes/api/pilot'
+import { Route as ApiSiteRouteImport } from './routes/api/site'
+import { Route as ApiSiteIdRouteImport } from './routes/api/site.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +30,58 @@ const ApiPilotRoute = ApiPilotRouteImport.update({
   path: '/api/pilot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSiteRoute = ApiSiteRouteImport.update({
+  id: '/api/site',
+  path: '/api/site',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSiteIdRoute = ApiSiteIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiSiteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/desk': typeof ApiDeskRoute
   '/api/pilot': typeof ApiPilotRoute
+  '/api/site': typeof ApiSiteRouteWithChildren
+  '/api/site/$id': typeof ApiSiteIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/desk': typeof ApiDeskRoute
   '/api/pilot': typeof ApiPilotRoute
+  '/api/site': typeof ApiSiteRouteWithChildren
+  '/api/site/$id': typeof ApiSiteIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/desk': typeof ApiDeskRoute
   '/api/pilot': typeof ApiPilotRoute
+  '/api/site': typeof ApiSiteRouteWithChildren
+  '/api/site/$id': typeof ApiSiteIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/desk' | '/api/pilot'
+  fullPaths: '/' | '/api/desk' | '/api/pilot' | '/api/site' | '/api/site/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/desk' | '/api/pilot'
-  id: '__root__' | '/' | '/api/desk' | '/api/pilot'
+  to: '/' | '/api/desk' | '/api/pilot' | '/api/site' | '/api/site/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/desk'
+    | '/api/pilot'
+    | '/api/site'
+    | '/api/site/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiDeskRoute: typeof ApiDeskRoute
   ApiPilotRoute: typeof ApiPilotRoute
+  ApiSiteRoute: typeof ApiSiteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -82,13 +107,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPilotRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/site': {
+      id: '/api/site'
+      path: '/api/site'
+      fullPath: '/api/site'
+      preLoaderRoute: typeof ApiSiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/site/$id': {
+      id: '/api/site/$id'
+      path: '/$id'
+      fullPath: '/api/site/$id'
+      preLoaderRoute: typeof ApiSiteIdRouteImport
+      parentRoute: typeof ApiSiteRoute
+    }
   }
 }
+
+interface ApiSiteRouteChildren {
+  ApiSiteIdRoute: typeof ApiSiteIdRoute
+}
+
+const ApiSiteRouteChildren: ApiSiteRouteChildren = {
+  ApiSiteIdRoute: ApiSiteIdRoute,
+}
+
+const ApiSiteRouteWithChildren =
+  ApiSiteRoute._addFileChildren(ApiSiteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiDeskRoute: ApiDeskRoute,
   ApiPilotRoute: ApiPilotRoute,
+  ApiSiteRoute: ApiSiteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

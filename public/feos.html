@@ -3620,7 +3620,7 @@ function restoreFacility(parsed, cur){
 
 
 /* ============ DATA (EXPORT / IMPORT) ============ */
-function DataPanel({counts, onExport, onImport, onImportAs, busy, report, onClose}){
+function DataPanel({counts, onExport, onImport, onImportAs, busy, report, onClose, siteId, onCopySite}){
   const fileRef=useRef(null);
   return (
     <div className="dirwrap" role="dialog" aria-label="Export and import">
@@ -3645,6 +3645,15 @@ function DataPanel({counts, onExport, onImport, onImportAs, busy, report, onClos
             ⬇ Download .xlsx
           </button>
         </div>
+
+        {siteId && (
+        <div className="vrow">
+          <div className="vrow-h"><span className="vname">This property’s live site</span></div>
+          <p className="dataline">Phone and laptop open the same building from this link. Enter it once here; it is the same record over there.</p>
+          <p className="dataline sub mono" style={{wordBreak:'break-all'}}>{siteLink(siteId)}</p>
+          <button className="btn ghost" style={{width:'100%',marginTop:12}} type="button" onClick={onCopySite}>Copy live link</button>
+        </div>
+        )}
 
         <div className="vrow">
           <div className="vrow-h"><span className="vname">Import a workbook</span></div>
@@ -4060,6 +4069,33 @@ async function outboxFlush(){
 
 /* ============ PERSISTENCE ============ */
 const SAVE_KEY='feos_state_v3';
+const SITE_KEY='feos_site_id';
+function isSiteId(v){ return typeof v==='string' && /^s_[a-f0-9]{32}$/.test(v); }
+function siteFromUrl(){
+  try{ const s=new URLSearchParams(location.search).get('site')||''; return isSiteId(s)?s:''; }catch(_){ return ''; }
+}
+function readSiteId(){
+  const fromUrl=siteFromUrl();
+  if(fromUrl){
+    try{ localStorage.setItem(SITE_KEY, fromUrl); }catch(_){}
+    return fromUrl;
+  }
+  try{ const s=localStorage.getItem(SITE_KEY)||''; return isSiteId(s)?s:''; }catch(_){ return ''; }
+}
+function writeSiteId(id){
+  if(!isSiteId(id)) return;
+  try{ localStorage.setItem(SITE_KEY, id); }catch(_){}
+  try{
+    const u=new URL(location.href);
+    if(u.searchParams.get('site')!==id){
+      u.searchParams.set('site', id);
+      history.replaceState({}, '', u.pathname + u.search);
+    }
+  }catch(_){}
+}
+function siteLink(id){
+  try{ return location.origin + '/demo?site=' + id; }catch(_){ return '/demo?site='+id; }
+}
 function cacheKey(){
   return API.base ? ('feos_offline_'+(API.facility||'none')) : SAVE_KEY;
 }
@@ -4139,6 +4175,8 @@ function App(){
   const lseq=useRef(saved ? saved.lseq : 9);
   const bseq=useRef(saved ? saved.bseq : 9);
   const importHold=useRef(null);
+  const lastSitePut=useRef('');
+  const siteToast=useRef(false);
   const rolePreviewSeen=useRef(false);
   const quotaWarned=useRef(false);
   const apiLoaded=useRef(false);
@@ -4202,6 +4240,48 @@ function App(){
         setConn('offline');
         setConnNote(err.message);
       }
+    })();
+    return ()=>{cancelled=true;};
+  },[]);
+
+  /* Blank-template live site: same origin /api/site. Possession of the
+     unguessable id is access. Northgate stays a local walkthrough. */
+  useEffect(()=>{
+    if(API.on()) return;
+    const id=readSiteId();
+    if(!id) return;
+    let cancelled=false;
+    (async()=>{
+      try{
+        const r=await fetch('/api/site/'+id,{
+          headers:{Accept:'application/json','X-FEOS-Role':authRole()},
+          cache:'no-store', credentials:'same-origin'
+        });
+        const data=await r.json().catch(()=>({}));
+        if(cancelled || !r.ok || !data.payload) return;
+        const p=data.payload;
+        if(Array.isArray(p.buildings) && p.buildings.length){
+          setBuildings(p.buildings);
+          setLevels(Array.isArray(p.levels)?p.levels:[]);
+          setZonesAll(p.zonesAll && typeof p.zonesAll==='object'?p.zonesAll:{});
+          setIssues(Array.isArray(p.issues)?p.issues:[]);
+          setRecurring(Array.isArray(p.recurring)?p.recurring:[]);
+          setVendors(Array.isArray(p.vendors)?p.vendors:[]);
+          setInventory(Array.isArray(p.inventory)?p.inventory:[]);
+          if(canSeeBudget(authRole()) && Array.isArray(p.budget)) setBudget(p.budget);
+          if(p.levelId) setLevelId(p.levelId);
+          if(Number(p.seq)) seq.current=Number(p.seq);
+          if(Number(p.zseq)) zseq.current=Number(p.zseq);
+          if(Number(p.lseq)) lseq.current=Number(p.lseq);
+          if(Number(p.bseq)) bseq.current=Number(p.bseq);
+        }
+        setDataset('blank');
+        writeSiteId(id);
+        setSiteId(id);
+        setConn('live');
+        lastSitePut.current=JSON.stringify(p);
+        say('Loaded your property. Same building on this device as on the live link.');
+      }catch(_){ /* stay on whatever is local */ }
     })();
     return ()=>{cancelled=true;};
   },[]);
@@ -4595,6 +4675,50 @@ function App(){
       }
     }
   },[buildings, levels, zonesAll, issues, recurring, vendors, levelImages, budget, inventory, levelId, dataset, role]);
+
+  useEffect(()=>{
+    if(dataset!=='blank') return;
+    if(role==='tech') return;
+    const handle=setTimeout(async()=>{
+      const payload={
+        buildings, levels, zonesAll, issues, recurring, vendors, inventory, budget,
+        levelId, dataset:'blank',
+        seq:seq.current, zseq:zseq.current, lseq:lseq.current, bseq:bseq.current
+      };
+      const sig=JSON.stringify(payload);
+      if(sig===lastSitePut.current) return;
+      try{
+        let id=siteId || readSiteId();
+        if(!id){
+          const created=await fetch('/api/site',{
+            method:'POST',
+            headers:{'Content-Type':'application/json', Accept:'application/json'},
+            body:JSON.stringify({name: (buildings[0]&&buildings[0].name)||'Property'}),
+            credentials:'same-origin', cache:'no-store'
+          });
+          const rec=await created.json().catch(()=>({}));
+          if(!created.ok || !isSiteId(rec.id)) return;
+          id=rec.id;
+          writeSiteId(id);
+          setSiteId(id);
+        }
+        const saved=await fetch('/api/site/'+id,{
+          method:'PUT',
+          headers:{'Content-Type':'application/json', Accept:'application/json', 'X-FEOS-Role':role},
+          body:JSON.stringify({payload}),
+          credentials:'same-origin', cache:'no-store'
+        });
+        if(!saved.ok) return;
+        lastSitePut.current=sig;
+        setConn('live');
+        if(!siteToast.current){
+          siteToast.current=true;
+          say('Property is on the live site. Copy the link from Your data to open it on another device.');
+        }
+      }catch(_){ /* local copy still holds */ }
+    }, 900);
+    return ()=>clearTimeout(handle);
+  },[buildings, levels, zonesAll, issues, recurring, vendors, inventory, budget, levelId, dataset, role, siteId]);
 
   function jumpToIssue(iss){ setStacked(false); setShowProperty(false); setEditing(false); setLevelId(iss.lvl); setSel(iss); setLensPanelOpen(false); }
   function jumpToRoom(lvlId, zoneId){
@@ -5319,6 +5443,14 @@ function App(){
                    vendors:vendors.length, events:issues.reduce((a,i)=>a+(i.events||[]).length,0)}}
           busy={dataBusy} report={importReport}
           onExport={exportXlsx} onImport={importXlsx} onImportAs={importAs}
+          siteId={siteId}
+          onCopySite={()=>{
+            if(!siteId) return;
+            const link=siteLink(siteId);
+            if(navigator.clipboard && navigator.clipboard.writeText){
+              navigator.clipboard.writeText(link).then(()=>say('Live link copied. Open it on the other device.')).catch(()=>say(link));
+            } else say(link);
+          }}
           onClose={()=>setShowData(false)}/>)}
 
       {showPack && sel && (

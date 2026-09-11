@@ -16,6 +16,10 @@ import {
   validWalkToken,
   walkCookieFromHeader,
   walkSetCookie,
+  allowWalkIssue,
+  clientIp,
+  isBlockedPublicPath,
+  demoLocationFromSearch,
 } from "./src/lib/demo-walk.server";
 
 /** The files `src/lib/db.ts` globs — same directory, same non-recursive scope. */
@@ -378,6 +382,12 @@ function feosHtmlPlugin(): Plugin {
           }
           return;
         }
+        if (method === "GET" && isBlockedPublicPath(pathOnly)) {
+          res.statusCode = 404;
+          res.setHeader("Cache-Control", "no-store");
+          res.end("Not found");
+          return;
+        }
         if (method === "GET" && pathOnly.toLowerCase() === "/facilities-evidence-os.html") {
           res.statusCode = 404;
           res.setHeader("Cache-Control", "no-store");
@@ -385,9 +395,21 @@ function feosHtmlPlugin(): Plugin {
           return;
         }
         if (method === "GET" && pathOnly === "/demo") {
+          const ip = clientIp(req.headers as Record<string, unknown>);
+          if (!allowWalkIssue(ip)) {
+            res.statusCode = 429;
+            res.setHeader("Retry-After", "600");
+            res.setHeader("Cache-Control", "no-store");
+            try {
+              send(res, readFileSync(lockedPath, "utf8"));
+            } catch {
+              res.end("Not found");
+            }
+            return;
+          }
           res.statusCode = 302;
           res.setHeader("Set-Cookie", walkCookie(req));
-          res.setHeader("Location", "/feos.html");
+          res.setHeader("Location", demoLocationFromSearch(String(req.url || "").split("?")[1] || ""));
           res.setHeader("Cache-Control", "no-store");
           res.end();
           return;

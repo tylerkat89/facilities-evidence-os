@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#FFFBF5" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
 <meta name="referrer" content="no-referrer" />
 <meta name="robots" content="noindex,nofollow" />
 <title>FEOS — Facilities Evidence OS</title>
@@ -61,6 +64,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--clay); background:#ff
 .err{color:#B0472A; font-size:13px; min-height:1.2em; margin:6px 0 0}
 .ok{padding:18px; border-radius:var(--r); background:#EEF4EF; color:var(--ok); font-size:15px; line-height:1.5}
 .foot{font-size:12px; color:var(--mute); margin-top:22px; text-align:center}
+@media (min-width:700px){
+  .wrap{max-width:520px; padding:36px 28px 48px}
+  h1{font-size:32px}
+}
 @media print{
   body{background:#fff}
   .actions,.form,.foot,.card:last-of-type{display:none !important}
@@ -82,7 +89,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--clay); background:#ff
     <p class="lede">Navigate your property through an interactive map. Issues, vendors, evidence, recurring work and budgets stay tied to the place they belong. Enter it once. Everyone works from the same information.</p>
 
     <div class="actions">
-      <a class="btn primary" href="/demo">Explore the live demo</a>>
+      <a class="btn primary" href="/demo">Explore the live demo</a>
       <a class="btn" href="#pilot">Join the founding pilot</a>
     </div>
 

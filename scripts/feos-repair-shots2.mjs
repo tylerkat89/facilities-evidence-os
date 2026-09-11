@@ -1,0 +1,31 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ args: ['--no-sandbox'] });
+const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+page.setDefaultTimeout(20000);
+await page.goto('http://127.0.0.1:8080/feos.html', { waitUntil: 'networkidle' });
+await page.waitForTimeout(2000);
+// close drawer
+await page.locator('.drawer .x').click().catch(()=>{});
+await page.waitForTimeout(300);
+await page.locator('.fab').click();
+await page.waitForTimeout(400);
+const map = page.locator('svg.map');
+const box = await map.boundingBox();
+await page.mouse.click(box.x + box.width*0.4, box.y + box.height*0.5);
+await page.waitForTimeout(600);
+await page.screenshot({ path: '/tmp/feos-composer.png' });
+const h = await page.locator('.comp-h').textContent().catch(()=>null);
+const body = await page.locator('.modal').innerText().catch(()=>null);
+console.log('composer', h);
+console.log(body && body.slice(0,500));
+await page.locator('button:has-text("Cancel")').click();
+await page.waitForTimeout(300);
+// reopen P0 and action sheet
+await page.locator('.attn-row').first().click().catch(()=>{});
+await page.waitForTimeout(400);
+await page.locator('.updatebtn').click();
+await page.waitForTimeout(400);
+await page.screenshot({ path: '/tmp/feos-actions.png' });
+const act = await page.locator('.modal').innerText().catch(()=>null);
+console.log('actions', act && act.slice(0,700));
+await browser.close();

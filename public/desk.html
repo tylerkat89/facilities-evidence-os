@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex,nofollow" />
+<title>FEOS — Founding pilots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{ --cream:#FFFBF5; --ink:#2D3748; --mute:#66718A; --clay:#C87A48; --hair:rgba(45,55,72,.12); --r:18px; }
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; background:var(--cream); color:var(--ink); font-family:'Outfit',system-ui,sans-serif; font-size:16px; line-height:1.5}
+h1,h2{font-family:'Sora',system-ui,sans-serif; letter-spacing:-.03em; margin:0; text-wrap:balance}
+.wrap{max-width:440px; margin:0 auto; padding:22px 20px calc(40px + env(safe-area-inset-bottom))}
+.kicker{font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--clay)}
+h1{font-size:26px; line-height:1.2; margin:12px 0 8px}
+.lede{color:var(--mute); margin:0 0 20px}
+label{display:block; font-size:12px; font-weight:600; color:var(--mute); margin:12px 0 6px}
+input{width:100%; min-height:46px; padding:11px 12px; border-radius:12px; border:1px solid var(--hair); background:#fff; font:inherit}
+.btn{display:flex; align-items:center; justify-content:center; min-height:48px; margin-top:12px; padding:12px 18px;
+  border-radius:14px; border:1px solid var(--clay); background:var(--clay); color:#FFF7EC; font-weight:600; font-size:15px; width:100%; cursor:pointer}
+.err{color:#B0472A; font-size:13px; min-height:1.2em}
+.lead{background:#fff; border:1px solid var(--hair); border-radius:var(--r); padding:16px; margin:0 0 12px}
+.lead h2{font-size:16px; margin:0 0 4px}
+.meta{font-size:13px; color:var(--mute); margin:2px 0}
+.pain{margin:10px 0 0; font-size:15px}
+.empty{color:var(--mute); padding:18px 0}
+a{color:var(--ink)}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="kicker">Facilities Evidence OS</div>
+    <h1>Founding pilots</h1>
+    <p class="lede">This is the list. One place. Not email, not a spreadsheet.</p>
+    <form id="gate">
+      <label for="op">Operator email</label>
+      <input id="op" type="email" autocomplete="username" required placeholder="facilitiesevidenceos@gmail.com" />
+      <button class="btn" type="submit">Open the list</button>
+      <p class="err" id="err"></p>
+    </form>
+    <div id="list" hidden></div>
+  </main>
+  <script>
+  (function(){
+    var gate = document.getElementById('gate');
+    var list = document.getElementById('list');
+    var err = document.getElementById('err');
+    var saved = sessionStorage.getItem('feos-desk');
+    if (saved) document.getElementById('op').value = saved;
+    function show(leads){
+      gate.hidden = true;
+      list.hidden = false;
+      if (!leads.length){
+        list.innerHTML = '<p class="empty">No pilots yet. When someone joins, they land here.</p>';
+        return;
+      }
+      list.innerHTML = leads.map(function(l){
+        var email = l.email || '';
+        var phone = l.phone || '';
+        if (!email && l.contact) {
+          var parts = String(l.contact).split(' · ');
+          email = parts[0] || '';
+          phone = parts[1] || '';
+        }
+        var when = l.created_at ? String(l.created_at).replace('T',' ').slice(0,16) : '';
+        var via = l.referred_by ? (' · via '+esc(l.referred_by)) : '';
+        return '<article class="lead"><h2>'+esc(l.company||'—')+'</h2>'
+          +'<p class="meta">'+esc(l.name||'')+(when?' · '+esc(when):'')+via+'</p>'
+          +'<p class="meta">'+(email?'<a href="mailto:'+esc(email)+'">'+esc(email)+'</a>':'')
+          +(phone?' · <a href="tel:'+esc(phone)+'">'+esc(phone)+'</a>':'')+'</p>'
+          +'<p class="pain">'+esc(l.pain||'')+'</p></article>';
+      }).join('');
+    }
+    function esc(s){
+      return String(s).replace(/[&<>"']/g, function(c){
+        return ({'&':'&','<':'<','>':'>','"':'"',"'":'&#39;'})[c];
+      });
+    }
+    function load(email){
+      err.textContent = '';
+      return fetch('/api/desk', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body: JSON.stringify({email:email}),
+        credentials:'omit', cache:'no-store'
+      }).then(function(r){ return r.json().then(function(d){ return {r:r,d:d}; }); })
+        .then(function(x){
+          if (!x.r.ok || !x.d.ok) throw new Error(x.d.error || 'nope');
+          sessionStorage.setItem('feos-desk', email);
+          show(x.d.leads || []);
+        });
+    }
+    gate.addEventListener('submit', function(e){
+      e.preventDefault();
+      var email = document.getElementById('op').value.trim();
+      load(email).catch(function(){ err.textContent = 'That’s not the operator inbox.'; });
+    });
+    if (saved) load(saved).catch(function(){ sessionStorage.removeItem('feos-desk'); });
+  })();
+  </script>
+</body>
+</html>

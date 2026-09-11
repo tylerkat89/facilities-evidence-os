@@ -1,0 +1,32 @@
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ args: ['--no-sandbox'] });
+const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+page.on('pageerror', e => console.log('PAGEERROR', e.message));
+await page.goto('http://127.0.0.1:8080/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+await page.waitForFunction(() => /My Work|Main Building|Restroom/.test(document.body.innerText||''), { timeout: 30000 });
+await page.waitForTimeout(400);
+await page.evaluate(() => { try { localStorage.clear(); sessionStorage.clear(); } catch(_){} });
+await page.reload({ waitUntil: 'domcontentloaded' });
+await page.waitForFunction(() => /My Work|Main Building|Restroom/.test(document.body.innerText||''), { timeout: 30000 });
+await page.waitForTimeout(800);
+const boot = (await page.locator('body').innerText()).slice(0, 200);
+console.log('BOOT_HEAD', boot.replace(/\s+/g,' ').slice(0,180));
+console.log('MAP_FIRST', /Main Building/.test(boot) && !/^My Work/.test(boot.trim()));
+console.log('MYWORK_TAKEOVER', /0 assigned/.test(await page.locator('body').innerText()) && !(await page.locator('svg.map').count()));
+await page.screenshot({ path: '/workspace/screenshots/walk/20-tech-boot.png' });
+
+const svg = page.locator('svg.map');
+await svg.waitFor({ timeout: 8000 });
+const box = await svg.boundingBox();
+// Restroom is the right blob (~0.54–0.86 x, ~0.21–0.79 y in viewBox)
+const x = box.x + box.width * 0.70;
+const y = box.y + box.height * 0.40;
+console.log('click', x, y, box);
+await page.mouse.click(x, y);
+await page.waitForTimeout(600);
+await page.screenshot({ path: '/workspace/screenshots/walk/21-restroom-tap.png' });
+const t = await page.locator('body').innerText();
+console.log('HAS_REPORT', /Report something here/.test(t));
+console.log('HAS_SHEET', /102 · Restroom/.test(t));
+console.log('SLICE', t.replace(/\s+/g,' ').match(/Restroom[\s\S]{0,220}/)?.[0]);
+await browser.close();

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex,nofollow" />
+<title>FEOS — Show this QR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{ --cream:#FFFBF5; --ink:#2D3748; --mute:#66718A; --clay:#C87A48; --hair:rgba(45,55,72,.12); }
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; background:var(--cream); color:var(--ink);
+  font-family:'Outfit',system-ui,sans-serif; min-height:100dvh}
+.wrap{max-width:440px; margin:0 auto; padding:28px 20px calc(36px + env(safe-area-inset-bottom)); text-align:center}
+.kicker{font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--clay)}
+h1{font-family:'Sora',system-ui,sans-serif; font-size:26px; letter-spacing:-.03em; line-height:1.2; margin:14px 0 8px; text-wrap:balance}
+.lede{color:var(--mute); margin:0 0 22px; text-wrap:pretty}
+.box{background:#fff; border:1px solid var(--hair); border-radius:18px; padding:22px 18px}
+#qr{width:260px; height:260px; margin:0 auto}
+.url{margin:14px 0 0; font-size:12px; color:var(--mute); word-break:break-all}
+.btn{display:flex; align-items:center; justify-content:center; min-height:48px; margin-top:12px; padding:12px 18px;
+  border-radius:14px; border:1px solid var(--hair); background:#fff; font-weight:600; font-size:15px;
+  text-decoration:none; color:var(--ink); cursor:pointer; width:100%}
+.btn.primary{background:var(--clay); color:#FFF7EC; border-color:var(--clay)}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="kicker">Facilities Evidence OS</div>
+    <h1 id="title">Have them scan this.</h1>
+    <p class="lede" id="lede">Their phone opens the business card — demo, pricing, and join. Not your mail app.</p>
+    <div class="box">
+      <div id="qr"></div>
+      <p class="url" id="url"></p>
+    </div>
+    <button class="btn primary" type="button" id="save">Save QR to photos</button>
+    <a class="btn" href="/pilot" id="open">Open the card</a>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
+  <script>
+  (function(){
+    var known = {ups:'UPS roommate'};
+    var code = '';
+    var path = (location.pathname || '').replace(/\/+$/,'');
+    var m = path.match(/^\/qr\/([a-z0-9-]{1,24})$/i);
+    if (m) code = m[1].toLowerCase();
+    try {
+      var q = new URLSearchParams(location.search).get('ref') || '';
+      if (!code && q) code = String(q).toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,24);
+    } catch(_){}
+    if (code && !known[code]) code = '';
+    var target = location.origin + '/pilot' + (code ? ('?ref=' + encodeURIComponent(code)) : '');
+    document.getElementById('url').textContent = target;
+    document.getElementById('open').setAttribute('href', code ? ('/pilot?ref=' + encodeURIComponent(code)) : '/pilot');
+    if (code) {
+      document.getElementById('title').textContent = 'His scan. His credit.';
+      document.getElementById('lede').textContent = 'Same launch page. When they join the pilot, this QR tags the lead as ' + known[code] + '.';
+    }
+    var host = document.getElementById('qr');
+    try {
+      new QRCode(host, { text: target, width: 260, height: 260, correctLevel: QRCode.CorrectLevel.M });
+    } catch (_) {
+      host.textContent = target;
+    }
+    document.getElementById('save').onclick = function(){
+      var canvas = host.querySelector('canvas');
+      var img = host.querySelector('img');
+      var a = document.createElement('a');
+      a.download = code ? ('feos-' + code + '-qr.png') : 'feos-card-qr.png';
+      if (canvas) a.href = canvas.toDataURL('image/png');
+      else if (img) a.href = img.src;
+      else return;
+      a.click();
+    };
+  })();
+  </script>
+</body>
+</html>

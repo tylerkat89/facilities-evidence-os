@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="referrer" content="no-referrer" />
+<meta name="robots" content="noindex,nofollow" />
+<title>FEOS — Facilities Evidence OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --cream:#FFFBF5; --paper:#FFF6EA; --ink:#2D3748; --mute:#66718A;
+  --clay:#C87A48; --clay-soft:#E8A87C; --hair:rgba(45,55,72,.12);
+  --ok:#5E7A6A; --r:18px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html{-webkit-font-smoothing:antialiased}
+html,body{margin:0; background:var(--cream); color:var(--ink);
+  font-family:'Outfit',system-ui,sans-serif; font-size:16px; line-height:1.5}
+h1,h2,h3{font-family:'Sora',system-ui,sans-serif; letter-spacing:-.03em; margin:0; text-wrap:balance}
+button,input,select,textarea{font:inherit; color:inherit}
+.wrap{max-width:440px; margin:0 auto; padding:22px 20px calc(40px + env(safe-area-inset-bottom))}
+.mark{width:42px; height:42px; border-radius:13px; display:grid; place-items:center;
+  background:linear-gradient(150deg,#E8A87C,#C87A48); color:#FFF7EC; font-size:20px;
+  box-shadow:inset 0 -2px 4px rgba(200,122,72,.3)}
+.kicker{font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--clay)}
+.name{font-size:15px; font-weight:600; margin-top:18px}
+.role{font-size:13px; color:var(--mute)}
+.mail{font-size:13.5px; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--hair); padding-bottom:1px}
+.mail:hover{border-color:var(--clay)}
+h1{font-size:28px; line-height:1.2; margin:22px 0 10px}
+.lede{font-size:16.5px; color:var(--mute); text-wrap:pretty; margin:0 0 22px}
+.principles{margin:4px 0 24px}
+.principles p{
+  font-family:'Sora',system-ui,sans-serif; font-size:15px; font-weight:500; line-height:1.4;
+  margin:0; padding:13px 0; border-bottom:1px solid var(--hair); text-wrap:balance}
+.principles p:first-child{border-top:1px solid var(--hair)}
+.after{font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--mute); margin:18px 0 2px}
+.actions{display:grid; gap:10px; margin:22px 0 28px}
+.btn{display:flex; align-items:center; justify-content:center; min-height:48px; padding:12px 18px;
+  border-radius:14px; border:1px solid var(--hair); background:#fff; font-weight:600; font-size:15px;
+  text-decoration:none; color:var(--ink); cursor:pointer}
+.btn.primary{background:var(--clay); color:#FFF7EC; border-color:var(--clay)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.card{background:#fff; border:1px solid var(--hair); border-radius:var(--r); padding:18px 18px 8px; margin-bottom:16px}
+.card h2{font-size:15px; margin-bottom:8px}
+.card p{font-size:14px; color:var(--mute); margin:0 0 12px; text-wrap:pretty}
+.price{display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-top:1px solid var(--hair);
+  font-size:14.5px}
+.price b{font-variant-numeric:tabular-nums; font-family:'Sora',system-ui,sans-serif}
+label{display:block; font-size:12px; font-weight:600; color:var(--mute); margin:12px 0 6px}
+input,select,textarea{width:100%; min-height:46px; padding:11px 12px; border-radius:12px;
+  border:1px solid var(--hair); background:var(--cream); outline:none}
+textarea{min-height:88px; resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--clay); background:#fff}
+.check{display:flex; gap:10px; align-items:flex-start; margin:16px 0 8px; font-size:14px; line-height:1.4}
+.check input{width:20px; height:20px; min-height:0; margin-top:2px; flex:0 0 auto; accent-color:var(--clay)}
+.err{color:#B0472A; font-size:13px; min-height:1.2em; margin:6px 0 0}
+.ok{padding:18px; border-radius:var(--r); background:#EEF4EF; color:var(--ok); font-size:15px; line-height:1.5}
+.foot{font-size:12px; color:var(--mute); margin-top:22px; text-align:center}
+@media print{
+  body{background:#fff}
+  .actions,.form,.foot,.card:last-of-type{display:none !important}
+  .wrap{padding:24px}
+  h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="mark" aria-hidden="true">🏛</div>
+    <div class="kicker" style="margin-top:14px">Facilities Evidence OS</div>
+    <div class="name">Tyler Katayama</div>
+    <div class="role">Founding operator</div>
+    <p style="margin:8px 0 0"><a class="mail" href="mailto:facilitiesevidenceos@gmail.com">facilitiesevidenceos@gmail.com</a></p>
+    <p style="margin:6px 0 0"><a class="mail" href="tel:+17144173190">(714) 417-3190</a></p>
+
+    <h1>Interact with your building, not your spreadsheets.</h1>
+    <p class="lede">Navigate your property through an interactive map. Issues, vendors, evidence, recurring work and budgets stay tied to the place they belong. Enter it once. Everyone works from the same information.</p>
+
+    <div class="actions">
+      <a class="btn primary" href="/demo">Explore the live demo</a>>
+      <a class="btn" href="#pilot">Join the founding pilot</a>
+    </div>
+
+    <div class="principles">
+      <p>Enhance your facilities team. Don’t replace them.</p>
+      <p>Enter it once. Stop re-entering the same information.</p>
+      <p>No more “why didn’t you tell me?”</p>
+      <p>Work complete doesn’t automatically mean closed.</p>
+      <p>See where the money went and what work it paid for.</p>
+      <p>Spreadsheets still import. Your data isn’t trapped.</p>
+    </div>
+
+    <section class="card">
+      <h2>Founding pilot — free</h2>
+      <p>I’ll help set up your property and work with your team while you test FEOS in the real world.</p>
+      <p>No payment during the pilot. No obligation to continue.</p>
+      <div class="after">If you decide to keep it after the pilot</div>
+      <div class="price"><span>1 site</span><b>$29.99 / month</b></div>
+      <div class="price"><span>2 or more sites</span><b>$24.99 / site / month</b></div>
+    </section>
+
+    <section class="card form" id="pilot">
+      <h2>Want to be a founding pilot site?</h2>
+      <p>If I come back with your property set up and working, would you test it with your team and tell me what sucks?</p>
+      <form id="f" novalidate>
+        <label for="name">Name</label>
+        <input id="name" name="name" autocomplete="name" required maxlength="80" />
+        <label for="company">Company / property</label>
+        <input id="company" name="company" autocomplete="organization" required maxlength="120" />
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required maxlength="120" placeholder="you@place.com" />
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" type="tel" autocomplete="tel" required maxlength="40" placeholder="714…" />
+        <label for="pain">Biggest facilities headache — one sentence is plenty.</label>
+        <textarea id="pain" name="pain" maxlength="400" required placeholder="Vendor follow-up, repeat leaks, missing photos, work orders getting lost…"></textarea>
+        <p class="err" id="err" hidden></p>
+        <div class="actions" style="margin:12px 0 8px">
+          <button class="btn primary" type="submit" id="go">Join the founding pilot</button>
+        </div>
+      </form>
+      <div class="ok" id="done" hidden></div>
+    </section>
+
+    <p class="foot">Pilot is free. You only pay if you keep it after — and only if you decide to.</p>
+  </main>
+  <script>
+  (function(){
+    var f = document.getElementById('f');
+    var err = document.getElementById('err');
+    var done = document.getElementById('done');
+    function refCode(){
+      var fromUrl = '';
+      try { fromUrl = new URLSearchParams(location.search).get('ref') || ''; } catch(_){}
+      var code = String(fromUrl).toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,24);
+      if (code) {
+        try { sessionStorage.setItem('feos-ref', code); } catch(_){}
+        return code;
+      }
+      try { return sessionStorage.getItem('feos-ref') || ''; } catch(_){ return ''; }
+    }
+    refCode();
+    f.addEventListener('submit', function(e){
+      e.preventDefault();
+      err.hidden = true;
+      var name = document.getElementById('name').value.trim();
+      var company = document.getElementById('company').value.trim();
+      var email = document.getElementById('email').value.trim();
+      var phone = document.getElementById('phone').value.trim();
+      var pain = document.getElementById('pain').value.trim();
+      if(!name || !company || !email || !phone || !pain){
+        err.hidden = false; err.textContent = 'Name, company, email, phone, and the headache.';
+        return;
+      }
+      if(email.indexOf('@') < 1 || email.indexOf('.') < 3){
+        err.hidden = false; err.textContent = 'Need a real email.';
+        return;
+      }
+      if(phone.replace(/\D/g,'').length < 10){
+        err.hidden = false; err.textContent = 'Need a real phone number.';
+        return;
+      }
+      var go = document.getElementById('go');
+      go.disabled = true;
+      var payload = {name:name, company:company, email:email, phone:phone, pain:pain, referred_by:refCode()};
+      fetch('/api/pilot', {
+        method:'POST',
+        headers:{'Content-Type':'application/json', 'Accept':'application/json'},
+        body: JSON.stringify(payload),
+        credentials:'omit', cache:'no-store'
+      }).then(function(r){
+        return r.json().catch(function(){ return {}; }).then(function(data){
+          if(!r.ok || data.ok !== true) throw new Error('nope');
+          f.hidden = true;
+          done.hidden = false;
+          done.textContent = 'You’re on the list. I’ll follow up. The pilot is free — nothing to buy.';
+        });
+      }).catch(function(){
+        go.disabled = false;
+        err.hidden = false;
+        err.textContent = 'Didn’t land. Email facilitiesevidenceos@gmail.com and say you want the pilot.';
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

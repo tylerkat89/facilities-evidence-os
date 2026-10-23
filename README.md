@@ -1,5 +1,7 @@
 # Facilities Evidence OS (FEOS)
 
+**Project creator and maintainer: [Tyler Katayama](https://github.com/tylerkat89) · [Attribution](ATTRIBUTION.md)**
+
 **Interact with your building, not your spreadsheets.**
 
 Map-first facilities software I am building as a solo project. Issues, vendors, photo evidence, inventory, and budgets stay attached to the room they belong to so maintenance teams enter information once and find it again from a floor plan.
